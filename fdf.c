@@ -27,7 +27,6 @@ int		esc_event(int keycode, void *param)
 **	return ((int)param);
 
 }*/
-
 void	draw(t_fdf ptr)
 {
 	int		x;
@@ -57,13 +56,35 @@ void	draw(t_fdf ptr)
 	}
 }
 
-int 	main(void)
+int 	main(int ac, char **av)
 {
 	t_fdf	ptr;
-	t_coord	*list;
+	char	*line;
+	//t_coord	*list;
+	int		i;
+	int		fd;
+	int		ret;
 
-	list = NULL;
-
+	if (ac != 2)
+		return (1);
+	i = 0;
+	fd = open(av[1], O_RDONLY);
+	while ((ret = get_next_line(fd, &line)) > 0)
+		i++;
+	close (fd);
+	fd = open(av[1], O_RDONLY);
+	while ((ret = get_next_line(fd, &line)) > 0)
+	{
+		
+		i++;
+	}
+	close (fd);
+	if (ret == -1)
+	{
+		printf("error\n");
+		exit(1);
+	}
+	printf("%d\n", i);
 	ptr.mlx = mlx_init();
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
