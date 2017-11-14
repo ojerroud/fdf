@@ -41,7 +41,7 @@ void	draw(t_fdf ptr)
 			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
 			x++;
 		}
-		y += POINT_DIST;
+		y += 20;
 	}
 	y = EDGE_DIST;
 	while (y <= (WIN_HEIGHT - EDGE_DIST))
@@ -50,7 +50,7 @@ void	draw(t_fdf ptr)
 		while (x <= (WIN_WIDTH - EDGE_DIST))
 		{
 			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			x += POINT_DIST;
+			x += 20;
 		}
 		y++;
 	}
@@ -83,13 +83,11 @@ int		main(int ac, char **av)
 		exit(1);
 	}
 	printf("%d\n", i);
-/*
-**	ptr.mlx = mlx_init();
-**	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
-**	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
-**		return (0);
-**	mlx_mouse_hook(ptr.win, click_event, 0);
-*/
+	ptr.mlx = mlx_init();
+	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
+	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
+		return (0);
+	//mlx_mouse_hook(ptr.win, click_event, 0);
 	draw(ptr);
 	mlx_loop(ptr.mlx);
 	return (0);

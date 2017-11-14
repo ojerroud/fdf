@@ -30,15 +30,10 @@
 /*
 ** taille /\
 */
-# define EDGE_DIST	200
+# define EDGE_DIST	100
 
 /*
 **distance du bord
-*/
-# define POINT_DIST	40
-
-/*
-**distance entre deux cellule de base en 2D
 */
 
 typedef struct		s_coord
