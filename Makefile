@@ -36,6 +36,9 @@ $(NAME):
 recomp:
 	$(CC) $(CFLAGS) $(NAME) $(SRC) $(INCDIR) $(MINIFLAGS) $(LIBFLAGS)
 
+test:
+	$(CC) $(CFLAGS) test_fdf test.c $(INCDIR) $(MINIFLAGS) $(LIBFLAGS)
+
 clean : 
 	make clean -C libft
 	/bin/rm -f $(OBJ)

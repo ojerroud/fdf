@@ -1,41 +1,79 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   test.c                                             :+:      :+:    :+:   */
+/*   fdf.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ojerroud <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/07 15:51:12 by ojerroud          #+#    #+#             */
-/*   Updated: 2017/11/07 15:51:15 by ojerroud         ###   ########.fr       */
+/*   Created: 2017/09/26 16:52:22 by ojerroud          #+#    #+#             */
+/*   Updated: 2017/09/26 17:31:20 by ojerroud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
 
-int	main(void)
+int		main(int ac, char **av)
 {
-	t_mlx	mlx;
-	int		count_w;
-	int		count_h;
+	t_file_param	file;
+	int				**tab;
+	char			**tmp;
+	char			*line;
+	int				fd;
+	int				ret;
+	size_t			i;
+	size_t			y;
 
-	count_h = -1;
-	mlx.mlx_ptr = mlx_init();
-	mlx.win = mlx_new_window(mlx.mlx_ptr, WIN_WIDTH, WIN_HEIGHT, "A simple example");
-	mlx.img.img_ptr = mlx_new_image(mlx.mlx_ptr, WIN_WIDTH, WIN_HEIGHT);
-	mlx.img.data = (int *)mlx_get_data_addr(mlx.img.img_ptr, &mlx.img.bpp, &mlx.img.size_l,
-		&mlx.img.endian);
-	while (++count_h < WIN_HEIGHT)
+	if (ac != 2)
+		return (1);
+	file.height = 0;
+	fd = open(av[1], O_RDONLY);
+	while ((ret = get_next_line(fd, &line)) > 0)
 	{
-		count_w = -1;
-		while (++count_w < WIN_WIDTH)
-		{
-			if (count_w % 2)
-				mlx.img.data[count_h * WIN_WIDTH + count_w] = 0xFFFFFF;
-			else
-				mlx.img.data[count_h * WIN_WIDTH + count_w] = 0;
-		}
+		ft_strdel(&line);
+		file.height++;
 	}
-	mlx_put_image_to_window(mlx.mlx_ptr, mlx.win, mlx.img.img_ptr, 0, 0);
-	mlx_loop(mlx.mlx_ptr);
+	if (ret == -1)
+		return (-1);
+	close(fd);
+	tab = (int **)malloc(sizeof(int*) * file.height);
+	y = 0;
+	fd = open(av[1], O_RDONLY);
+	while (get_next_line(fd, &line) > 0)
+	{
+		tmp = ft_strsplit(line, ' ');
+		ft_strdel(&line);
+		i = 0;
+		while (tmp[i])
+			i++;
+		file.width = i;
+		tab[y] = (int *)malloc(sizeof(int) * i);
+		i = -1;
+		while (tmp[++i])
+		{
+			tab[y][i] = ft_atoi(tmp[i]);
+			ft_strdel(&tmp[i]);
+		}
+		y++;
+		free(tmp);
+	}
+	y = 0;
+	while (file.height > y)
+	{
+		i = 0;
+		while (file.width > i)
+		{
+			printf("%d ", tab[y][i]);
+		i++;
+		}
+		printf("\n");
+		y++;
+	}
+	while(1){}
+/*
+**	fd = open(av[1], O_RDONLY);
+**	while ((ret = get_next_line(fd, &line)) > 0)
+**		i++;
+**	close(fd);
+*/
 	return (0);
 }

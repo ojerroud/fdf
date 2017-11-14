@@ -17,23 +17,47 @@
 # include <stdlib.h>
 # include "mlx.h"
 # include "libft/includes/libft.h"
-# define WIN_WIDTH	800 /* largeur >*/
-# define WIN_HEIGHT	800 /* taille /\*/
-# define EDGE_DIST	200 /* distance du bord*/
-# define POINT_DIST	40	/* distance entre deux cellule de base en 2D*/
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+# define WIN_WIDTH	800
 
-typedef struct 		s_coord
+/*
+** largeur >
+*/
+# define WIN_HEIGHT	800
+
+/*
+** taille /\
+*/
+# define EDGE_DIST	200
+
+/*
+**distance du bord
+*/
+# define POINT_DIST	40
+
+/*
+**distance entre deux cellule de base en 2D
+*/
+
+typedef struct		s_coord
 {
-	size_t				x;
-	size_t				y;
-	struct	s_coord		*next;
+	size_t			x;
+	size_t			y;
+	struct s_coord	*next;
 }					t_coord;
+
+typedef struct		s_file_param
+{
+	size_t			height;
+	size_t			width;
+}					t_file_param;
 
 typedef struct		s_fdf
 {
 	void			*mlx;
 	void			*win;
 }					t_fdf;
-
 
 #endif

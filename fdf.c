@@ -15,18 +15,18 @@
 int		esc_event(int keycode, void *param)
 {
 	if (keycode == 53)
-		exit (1);
+		exit(1);
 	return ((int)param);
 }
 
 /*
-
 **	int		click_event(int button, int x, int y, void *param)
 **	{
 **	printf("button %d. x = %d et y = %d\n", button, x, y);
 **	return ((int)param);
+**	}
+*/
 
-}*/
 void	draw(t_fdf ptr)
 {
 	int		x;
@@ -56,11 +56,10 @@ void	draw(t_fdf ptr)
 	}
 }
 
-int 	main(int ac, char **av)
+int		main(int ac, char **av)
 {
 	t_fdf	ptr;
 	char	*line;
-	//t_coord	*list;
 	int		i;
 	int		fd;
 	int		ret;
@@ -71,29 +70,26 @@ int 	main(int ac, char **av)
 	fd = open(av[1], O_RDONLY);
 	while ((ret = get_next_line(fd, &line)) > 0)
 		i++;
-	close (fd);
+	close(fd);
 	fd = open(av[1], O_RDONLY);
 	while ((ret = get_next_line(fd, &line)) > 0)
 	{
-		
 		i++;
 	}
-	close (fd);
+	close(fd);
 	if (ret == -1)
 	{
 		printf("error\n");
 		exit(1);
 	}
 	printf("%d\n", i);
-	ptr.mlx = mlx_init();
-	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
-	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
-		return (0);
-	/*
-
-	** mlx_mouse_hook(ptr.win, click_event, 0);
-
-	*/
+/*
+**	ptr.mlx = mlx_init();
+**	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
+**	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
+**		return (0);
+**	mlx_mouse_hook(ptr.win, click_event, 0);
+*/
 	draw(ptr);
 	mlx_loop(ptr.mlx);
 	return (0);
