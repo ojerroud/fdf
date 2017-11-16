@@ -12,14 +12,33 @@
 
 #include "fdf.h"
 
-int		esc_event(int keycode, void *param)
+void			print_tab(t_file_param file, t_coord **tab)
+{
+	int	i;
+	int	j;
+
+	j = 0;
+	while (file.height > j)
+	{
+		i = 0;
+		while (file.width > i)
+		{
+			printf("%zu|%d|%d ", tab[j][i].z, tab[j][i].x, tab[j][i].y);
+			i++;
+		}
+		printf("\n");
+		j++;
+	}
+}
+
+int				esc_event(int keycode, void *param)
 {
 	if (keycode == 53)
 		exit(1);
 	return ((int)param);
 }
 
-void	link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
+void			link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
 {
 	int	dx;
 	int	dy;
@@ -39,41 +58,39 @@ void	link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
 		cumul += dy;
 		if (cumul >= dx)
 		{
-			 cumul -= dx;
-			 y += 1;
+			cumul -= dx;
+			y += 1;
 		}
- 		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
- 		x++;
-	} 
+		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		x++;
+	}
 }
 
-void	draw(t_fdf ptr, t_file_param file, t_coord **tab)
+void			draw(t_fdf ptr, t_file_param file, t_coord **tab)
 {
 	float	x;
 	float	y;
 	float	h;
 	float	w;
-	int		i;
-	int		j;
+	int		i[2];
 
 	h = ((float)WIN_HEIGHT - ((float)EDGE_DIST * 2)) / (file.height - 1);
 	w = ((float)WIN_WIDTH - ((float)EDGE_DIST * 2)) / (file.width - 1);
 	y = EDGE_DIST;
-	j = 0;
+	i[1] = 0;
 	while (y <= (WIN_HEIGHT - EDGE_DIST))
 	{
 		x = EDGE_DIST;
-		i = 0;
+		i[0] = -1;
 		while (x <= (WIN_WIDTH - EDGE_DIST))
 		{
 			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			tab[j][i].x = x;
-			tab[j][i].y = y;
+			tab[i[1]][++i[0]].x = x;
+			tab[i[1]][i[0]].y = y;
 			x += w;
-			i++;
 		}
 		y += h;
-		j++;
+		i[1]++;
 	}
 }
 
@@ -99,39 +116,40 @@ t_file_param	compt_line(char *input)
 	return (file);
 }
 
-t_file_param	compt_char()
+t_coord			**compt_colomn(char *input, t_file_param *file, t_coord **tab)
 {
-	j = -1;
-	fd = open(av[1], O_RDONLY);
+	char	**tmp;
+	char	*line;
+	int		fd;
+	int		i[2];
+
+	i[1] = -1;
+	fd = open(input, O_RDONLY);
 	while (get_next_line(fd, &line) > 0)
 	{
 		tmp = ft_strsplit(line, ' ');
 		ft_strdel(&line);
-		i = 0;
-		while (tmp[i])
-			i++;
-		file.width = i;
-		tab[++j] = (t_coord *)malloc(sizeof(t_coord) * i);
-		i = -1;
-		while (tmp[++i])
+		i[0] = 0;
+		while (tmp[i[0]])
+			i[0]++;
+		file->width = i[0];
+		tab[++i[1]] = (t_coord *)malloc(sizeof(t_coord) * i[0]);
+		i[0] = -1;
+		while (tmp[++i[0]])
 		{
-			tab[j][i].z = ft_atoi(tmp[i]);
-			ft_strdel(&tmp[i]);
+			tab[i[1]][i[0]].z = ft_atoi(tmp[i[0]]);
+			ft_strdel(&tmp[i[0]]);
 		}
 		free(tmp);
 	}
+	return (tab);
 }
 
-int		main(int ac, char **av)
+int				main(int ac, char **av)
 {
 	t_file_param	file;
 	t_fdf			ptr;
 	t_coord			**tab;
-	char			**tmp;
-	char			*line;
-	int				fd;
-	size_t			i;
-	size_t			j;
 
 	if (ac != 2)
 		return (-1);
@@ -139,24 +157,13 @@ int		main(int ac, char **av)
 	if (file.height == -1)
 		return (-1);
 	tab = (t_coord **)malloc(sizeof(t_coord*) * file.height);
-	
+	tab = compt_colomn(av[1], &file, tab);
 	ptr.mlx = mlx_init();
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
 		return (0);
 	draw(ptr, file, tab);
-	/*j = 0;
-	while (file.height > j)
-	{
-		i = 0;
-		while (file.width > i)
-		{
-			printf("%zu|%d|%d ", tab[j][i].z, tab[j][i].x, tab[j][i].y);
-			i++;
-		}
-		printf("\n");
-		j++;
-	}*/
+	print_tab(file, tab);
 	mlx_loop(ptr.mlx);
 	return (0);
 }

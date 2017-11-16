@@ -50,8 +50,8 @@ typedef struct		s_fdf
 
 typedef struct		s_coord
 {
-	int	x;
-	int	y;
+	int		x;
+	int		y;
 	size_t	z;
 }					t_coord;
 
