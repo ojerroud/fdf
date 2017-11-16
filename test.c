@@ -12,33 +12,7 @@
 
 #include "fdf.h"
 
-void			print_tab(t_file_param file, t_coord **tab)
-{
-	int	i;
-	int	j;
-
-	j = 0;
-	while (file.height > j)
-	{
-		i = 0;
-		while (file.width > i)
-		{
-			printf("%zu|%d|%d ", tab[j][i].z, tab[j][i].x, tab[j][i].y);
-			i++;
-		}
-		printf("\n");
-		j++;
-	}
-}
-
-int				esc_event(int keycode, void *param)
-{
-	if (keycode == 53)
-		exit(1);
-	return ((int)param);
-}
-
-void			link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
+void			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
 {
 	int	dx;
 	int	dy;
@@ -46,14 +20,14 @@ void			link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
 	int	x;
 	int	y;
 
-	x = xi;
-	y = yi;
-	dx = xf - xi;
-	dy = yf - yi;
+	x = strct1.x;
+	y = strct1.y;
+	dx = strct2.x - strct1.x;
+	dy = strct2.y - strct1.y;
 	mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
 	cumul = dx / 2;
-	x = xi + 1;
-	while (x <= xf)
+	x = strct1.x + 1;
+	while (x <= strct2.x)
 	{
 		cumul += dy;
 		if (cumul >= dx)
@@ -66,7 +40,39 @@ void			link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
 	}
 }
 
-void			draw(t_fdf ptr, t_file_param file, t_coord **tab)
+void			print_tab(t_fdf ptr, t_file_param file, t_coord **tab)
+{
+	int	i;
+	int	j;
+
+	i = -1;
+	while (file.height > ++i)
+	{
+		j = -1;
+		while (file.width - 1 > ++j)
+		{
+			link_dots(ptr, tab[i][j], tab[i][j + 1]);
+			printf("x = %d y = %d\n", tab[i][j].x, tab[i][j].y);
+		}
+	}
+	j = -1;
+	while (file.width > ++j)
+	{
+		i = -1;
+		while (file.height - 1 > ++i)
+			link_dots(ptr, tab[i][j], tab[i + 1][j]);
+		//printf("x = %d y = %d\n", tab[i][j].x, tab[i][j].y);
+	}
+}
+
+int				esc_event(int keycode, void *param)
+{
+	if (keycode == 53)
+		exit(1);
+	return ((int)param);
+}
+
+void			draw(t_file_param file, t_coord **tab)
 {
 	float	x;
 	float	y;
@@ -81,13 +87,14 @@ void			draw(t_fdf ptr, t_file_param file, t_coord **tab)
 	while (y <= (WIN_HEIGHT - EDGE_DIST))
 	{
 		x = EDGE_DIST;
-		i[0] = -1;
+		i[0] = 0;
 		while (x <= (WIN_WIDTH - EDGE_DIST))
 		{
-			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			tab[i[1]][++i[0]].x = x;
+			//mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+			tab[i[1]][i[0]].x = x;
 			tab[i[1]][i[0]].y = y;
 			x += w;
+			i[0]++;
 		}
 		y += h;
 		i[1]++;
@@ -162,8 +169,8 @@ int				main(int ac, char **av)
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
 		return (0);
-	draw(ptr, file, tab);
-	print_tab(file, tab);
+	draw(file, tab);
+	print_tab(ptr, file, tab);
 	mlx_loop(ptr.mlx);
 	return (0);
 }

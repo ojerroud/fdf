@@ -38,8 +38,8 @@
 
 typedef struct		s_file_param
 {
-	float	height;
-	float	width;
+	float	height; // taille (y)
+	float	width;  // largeur (x)
 }					t_file_param;
 
 typedef struct		s_fdf
