@@ -19,94 +19,89 @@ int		esc_event(int keycode, void *param)
 	return ((int)param);
 }
 
-void	ft_lstprint_fdf(t_coord *list)
+void	link_dots(t_fdf ptr, int xi, int yi, int xf, int yf)
 {
-	t_coord	*tmp;
+	int	dx;
+	int	dy;
+	int	cumul;
+	int	x;
+	int	y;
 
-	tmp = list;
-	while (tmp)
+	x = xi;
+	y = yi;
+	dx = xf - xi;
+	dy = yf - yi;
+	mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+	cumul = dx / 2;
+	x = xi + 1;
+	while (x <= xf)
 	{
-		ft_putnbr((size_t)tmp->x);
-		ft_putchar(' ');
-		ft_putnbr((size_t)tmp->y);
-		ft_putchar('\n');
-		tmp = tmp->next;
-	}
+		cumul += dy;
+		if (cumul >= dx)
+		{
+			 cumul -= dx;
+			 y += 1;
+		}
+ 		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+ 		x++;
+	} 
 }
 
-void	ft_lstadd_fdf(t_coord **alst, t_coord *new)
+void	draw(t_fdf ptr, t_file_param file, t_coord **tab)
 {
-	new->next = *alst;
-	*alst = new;
-}
+	float	x;
+	float	y;
+	float	h;
+	float	w;
+	int		i;
+	int		j;
 
-
-t_coord	*ft_lstnew_fdf(size_t x, size_t y)
-{
-	t_coord	*tmp;
-
-	if (!(tmp = (t_coord *)malloc(sizeof(t_coord))))
-		return (NULL);
-	tmp->x = x;
-	tmp->y = y;
-	tmp->next = NULL;
-	return (tmp);
-}
-
-void	draw(t_fdf ptr, t_file_param file)
-{
-	t_coord	*fdf;
-	t_coord	*curr;
-	float		x;
-	float		y;
-	float		h;
-	float		w;
-
-	fdf = NULL;
-	h = ((float)WIN_HEIGHT - ((float)EDGE_DIST * 2)) / ((float)file.height - 1);
-	w = ((float)WIN_WIDTH - ((float)EDGE_DIST * 2)) / ((float)file.width - 1);
+	h = ((float)WIN_HEIGHT - ((float)EDGE_DIST * 2)) / (file.height - 1);
+	w = ((float)WIN_WIDTH - ((float)EDGE_DIST * 2)) / (file.width - 1);
 	y = EDGE_DIST;
+	j = 0;
 	while (y <= (WIN_HEIGHT - EDGE_DIST))
 	{
 		x = EDGE_DIST;
+		i = 0;
 		while (x <= (WIN_WIDTH - EDGE_DIST))
 		{
 			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			curr = ft_lstnew_fdf(x, y);
-			ft_lstadd_fdf(&fdf, curr);
+			tab[j][i].x = x;
+			tab[j][i].y = y;
 			x += w;
+			i++;
 		}
 		y += h;
+		j++;
 	}
-	ft_lstprint_fdf(fdf);
 }
 
-int		main(int ac, char **av)
+t_file_param	compt_line(char *input)
 {
-	t_file_param	file;
-	t_fdf			ptr;
-	int				**tab;
-	char			**tmp;
-	char			*line;
-	int				fd;
 	int				ret;
-	size_t			i;
-	size_t			y;
+	int				fd;
+	char			*line;
+	t_file_param	file;
 
-	if (ac != 2)
-		return (1);
-	file.height = 0;
-	fd = open(av[1], O_RDONLY);
+	fd = open(input, O_RDONLY);
 	while ((ret = get_next_line(fd, &line)) > 0)
 	{
 		ft_strdel(&line);
 		file.height++;
 	}
 	if (ret == -1)
-		return (-1);
+	{
+		file.height = -1;
+		return (file);
+	}
 	close(fd);
-	tab = (int **)malloc(sizeof(int*) * file.height);
-	y = 0;
+	return (file);
+}
+
+t_file_param	compt_char()
+{
+	j = -1;
 	fd = open(av[1], O_RDONLY);
 	while (get_next_line(fd, &line) > 0)
 	{
@@ -116,41 +111,52 @@ int		main(int ac, char **av)
 		while (tmp[i])
 			i++;
 		file.width = i;
-		tab[y] = (int *)malloc(sizeof(int) * i);
+		tab[++j] = (t_coord *)malloc(sizeof(t_coord) * i);
 		i = -1;
 		while (tmp[++i])
 		{
-			tab[y][i] = ft_atoi(tmp[i]);
+			tab[j][i].z = ft_atoi(tmp[i]);
 			ft_strdel(&tmp[i]);
 		}
-		y++;
 		free(tmp);
 	}
+}
+
+int		main(int ac, char **av)
+{
+	t_file_param	file;
+	t_fdf			ptr;
+	t_coord			**tab;
+	char			**tmp;
+	char			*line;
+	int				fd;
+	size_t			i;
+	size_t			j;
+
+	if (ac != 2)
+		return (-1);
+	file = compt_line(av[1]);
+	if (file.height == -1)
+		return (-1);
+	tab = (t_coord **)malloc(sizeof(t_coord*) * file.height);
+	
 	ptr.mlx = mlx_init();
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
 		return (0);
-	draw(ptr, file);
-	mlx_loop(ptr.mlx);
-/*
-y = 0;
-while (file.height > y)
-{
-	i = 0;
-	while (file.width > i)
+	draw(ptr, file, tab);
+	/*j = 0;
+	while (file.height > j)
 	{
-		printf("%d ", tab[y][i]);
-		i++;
-	}
-	printf("\n");
-	y++;
-}
-*/
-/*
-	fd = open(av[1], O_RDONLY);
-	while ((ret = get_next_line(fd, &line)) > 0)
-		i++;
-	close(fd);
-*/
+		i = 0;
+		while (file.width > i)
+		{
+			printf("%zu|%d|%d ", tab[j][i].z, tab[j][i].x, tab[j][i].y);
+			i++;
+		}
+		printf("\n");
+		j++;
+	}*/
+	mlx_loop(ptr.mlx);
 	return (0);
 }

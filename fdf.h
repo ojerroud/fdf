@@ -36,23 +36,23 @@
 **distance du bord
 */
 
-typedef struct		s_coord
-{
-	size_t			x;
-	size_t			y;
-	struct s_coord	*next;
-}					t_coord;
-
 typedef struct		s_file_param
 {
-	size_t			height;
-	size_t			width;
+	float	height;
+	float	width;
 }					t_file_param;
 
 typedef struct		s_fdf
 {
-	void			*mlx;
-	void			*win;
+	void	*mlx;
+	void	*win;
 }					t_fdf;
+
+typedef struct		s_coord
+{
+	int	x;
+	int	y;
+	size_t	z;
+}					t_coord;
 
 #endif
