@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
+#include <math.h>
 
 void			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
 {
@@ -20,23 +21,43 @@ void			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
 	int	x;
 	int	y;
 
-	x = strct1.x;
 	y = strct1.y;
 	dx = strct2.x - strct1.x;
 	dy = strct2.y - strct1.y;
-	mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-	cumul = dx / 2;
-	x = strct1.x + 1;
-	while (x <= strct2.x)
+	if (strct2.x > strct1.x && strct2.y >= strct1.y && (strct2.x - strct1.x) >= (strct2.y - strct1.y))
 	{
-		cumul += dy;
-		if (cumul >= dx)
+		mlx_pixel_put(ptr.mlx, ptr.win, strct1.x, y, 0X00FFFFFF);
+		cumul = dx / 2;
+		x = strct1.x + 1;
+		while (x <= strct2.x)
 		{
-			cumul -= dx;
-			y += 1;
+			cumul += dy;
+			if (cumul >= dx)
+			{
+				cumul -= dx;
+				y += 1;
+			}
+			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+			x++;
 		}
-		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-		x++;
+	}
+	else
+	{
+		x = strct1.x;
+		mlx_pixel_put(ptr.mlx, ptr.win, strct1.x, y, 0X00FFFFFF);
+		cumul = dy / 2;
+		y = strct1.y + 1;
+		while (y <= strct2.y)
+		{
+			cumul += dx;
+			if (cumul >= dy)
+			{
+				cumul -= dy;
+				x += 1;
+			}
+			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+			y++;
+		}
 	}
 }
 
@@ -50,19 +71,16 @@ void			print_tab(t_fdf ptr, t_file_param file, t_coord **tab)
 	{
 		j = -1;
 		while (file.width - 1 > ++j)
-		{
 			link_dots(ptr, tab[i][j], tab[i][j + 1]);
-			printf("x = %d y = %d\n", tab[i][j].x, tab[i][j].y);
-		}
 	}
-	j = -1;
-	while (file.width > ++j)
+	i = -1;
+	while (file.height - 1 > ++i)
 	{
-		i = -1;
-		while (file.height - 1 > ++i)
+		j = -1;
+		while (file.width > ++j)
 			link_dots(ptr, tab[i][j], tab[i + 1][j]);
-		//printf("x = %d y = %d\n", tab[i][j].x, tab[i][j].y);
 	}
+	/* a ajouter verticale*/
 }
 
 int				esc_event(int keycode, void *param)
@@ -72,7 +90,7 @@ int				esc_event(int keycode, void *param)
 	return ((int)param);
 }
 
-void			draw(t_file_param file, t_coord **tab)
+void			sav_coord(t_file_param file, t_coord **tab)
 {
 	float	x;
 	float	y;
@@ -169,7 +187,7 @@ int				main(int ac, char **av)
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
 		return (0);
-	draw(file, tab);
+	sav_coord(file, tab);
 	print_tab(ptr, file, tab);
 	mlx_loop(ptr.mlx);
 	return (0);
