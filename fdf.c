@@ -11,84 +11,215 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
+#include <math.h>
 
-int		esc_event(int keycode, void *param)
+void			t2Dt3D(t_coord **tab, t_file_param file)
+{
+	int	i;
+	int	j;
+	int	tile_height;
+	int	tile_width;
+
+	if ((tab[0][0]).x > 0 && (tab[0][1]).x > 0 && (tab[1][0]).x > 0)
+	{
+		tile_height = tab[1][0].y - tab[0][0].y;
+		tile_width = tab[0][1].x - tab[0][0].x;
+	}
+	i = 0;
+	while (i < file.height)
+	{
+		j = 0;
+		while (j < file.width)
+		{
+			tab[i][j].x = tab[i][j].x - tab[i][j].y + (tile_width * file.width / 2);
+			tab[i][j].y = (tab[i][j].x + tab[i][j].y) / 2; 
+			printf("%d|%d\n", tab[i][j].x, tab[i][j].y);
+			j++;
+		}
+		i++;
+	}
+}
+
+void 			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
+{
+	int	dx;
+	int	dy;
+	int	i;
+	int	x1inc;
+	int	y1inc;
+	int	cumul;
+	int	x;
+	int	y;
+
+	x = strct1.x;
+	y = strct1.y;
+	dx = strct2.x - strct1.x;
+	dy = strct2.y - strct1.y;
+	x1inc = (dx > 0) ? 1 : -1;
+	y1inc = (dy > 0) ? 1 : -1;
+	dx = abs(dx);
+	dy = abs(dy);
+	mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+	if (dx > dy)
+	{
+		cumul = dx / 2;
+		for ( i = 1; i <= dx; i++ )
+		{
+			x += x1inc;
+			cumul += dy;
+			if ( cumul >= dx )
+			{
+				cumul -= dx;
+				y += y1inc;
+			}
+			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		}
+	}
+	else
+	{
+		cumul = dy / 2;
+		for ( i = 1; i <= dy; i++ )
+		{
+			y += y1inc;
+			cumul += dx;
+			if ( cumul >= dy )
+			{
+				cumul -= dy;
+				x += x1inc;
+			}
+			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		}
+	}
+}
+
+void			print_tab(t_fdf ptr, t_file_param file, t_coord **tab)
+{
+	int	i;
+	int	j;
+
+	i = -1;
+	while (file.height > ++i)
+	{
+		j = -1;
+		while (file.width - 1 > ++j)
+			link_dots(ptr, tab[i][j], tab[i][j + 1]);
+	}
+	i = -1;
+	while (file.height - 1 > ++i)
+	{
+		j = -1;
+		while (file.width > ++j)
+			link_dots(ptr, tab[i][j], tab[i + 1][j]);
+	}
+}
+
+int				esc_event(int keycode, void *param)
 {
 	if (keycode == 53)
 		exit(1);
 	return ((int)param);
 }
 
-/*
-**	int		click_event(int button, int x, int y, void *param)
-**	{
-**	printf("button %d. x = %d et y = %d\n", button, x, y);
-**	return ((int)param);
-**	}
-*/
-
-void	draw(t_fdf ptr)
+void			sav_coord(t_file_param file, t_coord **tab)
 {
-	int		x;
-	int		y;
+	float	x_val;
+	float	y_val;
+	float	h;
+	float	w;
+	int		i[2];
 
-	y = EDGE_DIST;
-	while (y <= (WIN_HEIGHT - EDGE_DIST))
+	h = ((float)WIN_HEIGHT - ((float)EDGE_DIST * 2)) / (file.height - 1);
+	w = ((float)WIN_WIDTH - ((float)EDGE_DIST * 2)) / (file.width - 1);
+	y_val = EDGE_DIST;
+	i[1] = 0;
+	while (y_val <= (WIN_HEIGHT - EDGE_DIST))
 	{
-		x = EDGE_DIST;
-		while (x <= (WIN_WIDTH - EDGE_DIST))
+		x_val = EDGE_DIST;
+		i[0] = 0;
+		while (x_val <= (WIN_WIDTH - EDGE_DIST))
 		{
-			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			x++;
+			//mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+			tab[i[1]][i[0]].x = x_val;
+			tab[i[1]][i[0]].y = y_val;
+			x_val += w;
+			i[0]++;
 		}
-		y += 20;
-	}
-	y = EDGE_DIST;
-	while (y <= (WIN_HEIGHT - EDGE_DIST))
-	{
-		x = EDGE_DIST;
-		while (x <= (WIN_WIDTH - EDGE_DIST))
-		{
-			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-			x += 20;
-		}
-		y++;
+		y_val += h;
+		i[1]++;
 	}
 }
 
-int		main(int ac, char **av)
+t_file_param	compt_line(char *input)
 {
-	t_fdf	ptr;
-	char	*line;
-	int		i;
-	int		fd;
-	int		ret;
+	int				ret;
+	int				fd;
+	char			*line;
+	t_file_param	file;
 
-	if (ac != 2)
-		return (1);
-	i = 0;
-	fd = open(av[1], O_RDONLY);
-	while ((ret = get_next_line(fd, &line)) > 0)
-		i++;
-	close(fd);
-	fd = open(av[1], O_RDONLY);
+	fd = open(input, O_RDONLY);
 	while ((ret = get_next_line(fd, &line)) > 0)
 	{
-		i++;
+		ft_strdel(&line);
+		file.height++;
 	}
-	close(fd);
 	if (ret == -1)
 	{
-		printf("error\n");
-		exit(1);
+		file.height = -1;
+		return (file);
 	}
-	printf("%d\n", i);
+	close(fd);
+	return (file);
+}
+
+t_coord			**compt_colomn(char *input, t_file_param *file, t_coord **tab)
+{
+	char	**tmp;
+	char	*line;
+	int		fd;
+	int		i[2];
+
+	i[1] = -1;
+	fd = open(input, O_RDONLY);
+	while (get_next_line(fd, &line) > 0)
+	{
+		tmp = ft_strsplit(line, ' ');
+		ft_strdel(&line);
+		i[0] = 0;
+		while (tmp[i[0]])
+			i[0]++;
+		file->width = i[0];
+		tab[++i[1]] = (t_coord *)malloc(sizeof(t_coord) * i[0]);
+		i[0] = -1;
+		while (tmp[++i[0]])
+		{
+			tab[i[1]][i[0]].z = ft_atoi(tmp[i[0]]);
+			ft_strdel(&tmp[i[0]]);
+		}
+		free(tmp);
+	}
+	return (tab);
+}
+
+int				main(int ac, char **av)
+{
+	t_file_param	file;
+	t_fdf			ptr;
+	t_coord			**tab;
+
+	if (ac != 2)
+		return (-1);
+	file = compt_line(av[1]);
+	if (file.height == -1)
+		return (-1);
+	tab = (t_coord **)malloc(sizeof(t_coord*) * file.height);
+	tab = compt_colomn(av[1], &file, tab);
+	sav_coord(file, tab);
 	ptr.mlx = mlx_init();
 	ptr.win = mlx_new_window(ptr.mlx, WIN_WIDTH, WIN_HEIGHT, "fdf");
 	if (mlx_key_hook(ptr.win, esc_event, 0) == 1)
 		return (0);
-	//mlx_mouse_hook(ptr.win, click_event, 0);
-	draw(ptr);
+	t2Dt3D(tab, file);
+	print_tab(ptr, file, tab);
 	mlx_loop(ptr.mlx);
 	return (0);
 }
