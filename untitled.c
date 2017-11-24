@@ -19,11 +19,7 @@ void			t2Dt3D(t_coord **tab, t_file_param file)
 	int	j;
 	int	tile_height;
 	int	tile_width;
-	int	x_out;
-	int	y_out;
 
-	x_out = 0;
-	y_out = 0;
 	if ((tab[0][0]).x > 0 && (tab[0][1]).x > 0 && (tab[1][0]).x > 0)
 	{
 		tile_height = tab[1][0].y - tab[0][0].y;
@@ -35,27 +31,9 @@ void			t2Dt3D(t_coord **tab, t_file_param file)
 		j = 0;
 		while (j < file.width)
 		{
-			
-			tab[i][j].x = (j - i) * (tile_width / 2) + (file.width / 10);
-			tab[i][j].y = (i + j) * (tile_height / 8) + (file.height / 10);
-			if (tab[i][j].x < x_out)
-				x_out = tab[i][j].x;
-			if (tab[i][j].y < y_out)
-				y_out = tab[i][j].y;
+			tab[i][j].x = (j - i) * (tile_width / 2) + (tile_width * file.width / 2);
+			tab[i][j].y = (i + j) * (tile_height / 2); 
 			printf("%d|%d\n", tab[i][j].x, tab[i][j].y);
-			j++;
-		}
-		i++;
-	}
-	i = 0;
-	while (i < file.height)
-	{
-		j = 0;
-		while (j < file.width)
-		{
-			
-			tab[i][j].x -= x_out;
-			tab[i][j].y -= y_out;
 			j++;
 		}
 		i++;

@@ -30,7 +30,7 @@
 /*
 ** taille /\
 */
-# define EDGE_DIST	100
+# define EDGE_DIST	1
 
 /*
 **distance du bord
