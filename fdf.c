@@ -35,9 +35,8 @@ void			t2Dt3D(t_coord **tab, t_file_param file)
 		j = 0;
 		while (j < file.width)
 		{
-			
-			tab[i][j].x = (j - i) * (tile_width / 2) + (file.width / 10);
-			tab[i][j].y = (i + j) * (tile_height / 8) + (file.height / 10);
+			tab[i][j].x = (j - i) * (tile_width / 2) + (WIN_WIDTH / 2.5);
+			tab[i][j].y = (i + j) * (tile_height / 8) + (WIN_HEIGHT / 4);
 			if (tab[i][j].x < x_out)
 				x_out = tab[i][j].x;
 			if (tab[i][j].y < y_out)
@@ -53,7 +52,8 @@ void			t2Dt3D(t_coord **tab, t_file_param file)
 		j = 0;
 		while (j < file.width)
 		{
-			
+			if (tab[i][j].z != 0)
+				tab[i][j].y -= (tab[i][j].z * 2);
 			tab[i][j].x -= x_out;
 			tab[i][j].y -= y_out;
 			j++;
@@ -62,7 +62,7 @@ void			t2Dt3D(t_coord **tab, t_file_param file)
 	}
 }
 
-void 			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
+void 			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2, int sommet)
 {
 	int	dx;
 	int	dy;
@@ -73,6 +73,7 @@ void 			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
 	int	x;
 	int	y;
 
+	sommet = 80 * sommet / 100;
 	x = strct1.x;
 	y = strct1.y;
 	dx = strct2.x - strct1.x;
@@ -81,35 +82,106 @@ void 			link_dots(t_fdf ptr, t_coord strct1, t_coord strct2)
 	yinc = (dy > 0) ? 1 : -1;
 	dx = abs(dx);
 	dy = abs(dy);
-	mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
-	if (dx > dy)
+	if (strct1.z >= sommet && strct2.z >= sommet)
 	{
-		cumul = dx / 2;
-		for ( i = 1; i <= dx; i++ )
+		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		if (dx > dy)
 		{
-			x += xinc;
-			cumul += dy;
-			if ( cumul >= dx )
+			cumul = dx / 2;
+			for ( i = 1; i <= dx; i++ )
 			{
-				cumul -= dx;
-				y += yinc;
+				x += xinc;
+				cumul += dy;
+				if ( cumul >= dx )
+				{
+					cumul -= dx;
+					y += yinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
 			}
-			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		}
+		else
+		{
+			cumul = dy / 2;
+			for ( i = 1; i <= dy; i++ )
+			{
+				y += yinc;
+				cumul += dx;
+				if ( cumul >= dy )
+				{
+					cumul -= dy;
+					x += xinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+			}
+		}
+	}
+	else if (!strct1.z && !strct2.z)
+	{
+		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00008000);
+		if (dx > dy)
+		{
+			cumul = dx / 2;
+			for ( i = 1; i <= dx; i++ )
+			{
+				x += xinc;
+				cumul += dy;
+				if ( cumul >= dx )
+				{
+					cumul -= dx;
+					y += yinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00008000);
+			}
+		}
+		else
+		{
+			cumul = dy / 2;
+			for ( i = 1; i <= dy; i++ )
+			{
+				y += yinc;
+				cumul += dx;
+				if ( cumul >= dy )
+				{
+					cumul -= dy;
+					x += xinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00008000);
+			}
 		}
 	}
 	else
 	{
-		cumul = dy / 2;
-		for ( i = 1; i <= dy; i++ )
+		mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00582900);
+		if (dx > dy)
 		{
-			y += yinc;
-			cumul += dx;
-			if ( cumul >= dy )
+			cumul = dx / 2;
+			for ( i = 1; i <= dx; i++ )
 			{
-				cumul -= dy;
 				x += xinc;
+				cumul += dy;
+				if ( cumul >= dx )
+				{
+					cumul -= dx;
+					y += yinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00582900);
 			}
-			mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00FFFFFF);
+		}
+		else
+		{
+			cumul = dy / 2;
+			for ( i = 1; i <= dy; i++ )
+			{
+				y += yinc;
+				cumul += dx;
+				if ( cumul >= dy )
+				{
+					cumul -= dy;
+					x += xinc;
+				}
+				mlx_pixel_put(ptr.mlx, ptr.win, x, y, 0X00582900);
+			}
 		}
 	}
 }
@@ -118,20 +190,30 @@ void			print_tab(t_fdf ptr, t_file_param file, t_coord **tab)
 {
 	int	i;
 	int	j;
+	int	sommet;
 
+	i = -1;
+	sommet = 0;
+	while (file.height > ++i)
+	{
+		j = -1;
+		while (file.width > ++j)
+			if ((tab[i][j].z) > sommet)
+				sommet = tab[i][j].z;
+	}
 	i = -1;
 	while (file.height > ++i)
 	{
 		j = -1;
 		while (file.width - 1 > ++j)
-			link_dots(ptr, tab[i][j], tab[i][j + 1]);
+			link_dots(ptr, tab[i][j], tab[i][j + 1], sommet);
 	}
 	i = -1;
 	while (file.height - 1 > ++i)
 	{
 		j = -1;
 		while (file.width > ++j)
-			link_dots(ptr, tab[i][j], tab[i + 1][j]);
+			link_dots(ptr, tab[i][j], tab[i + 1][j], sommet);
 	}
 }
 

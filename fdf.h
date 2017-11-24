@@ -52,7 +52,7 @@ typedef struct		s_coord
 {
 	int		x;
 	int		y;
-	size_t	z;
+	int		z;
 }					t_coord;
 
 #endif
