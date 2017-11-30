@@ -46,6 +46,7 @@ typedef struct		s_fdf
 {
 	void	*mlx;
 	void	*win;
+	void	*img;
 }					t_fdf;
 
 typedef struct		s_coord
@@ -54,5 +55,13 @@ typedef struct		s_coord
 	int		y;
 	int		z;
 }					t_coord;
+
+typedef struct		s_data	
+{
+	int		*data;
+	int		bpp;
+	int		sizeline;
+	int		endian;
+}					t_data;
 
 #endif

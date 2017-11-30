@@ -15,23 +15,14 @@
 
 void			draw(t_fdf ptr, t_coord pts, t_data *getadrr)
 {
-	unsigned int	color;
-	/*unsigned int	r;
-	unsigned int	g;
-	unsigned int	b;*/
-
-	color = mlx_get_color_value(ptr.mlx, 0x00FFFFFF);
-	getadrr->data = mlx_get_data_addr(ptr.img, &getadrr->bpp, &getadrr->sizeline, &getadrr->endian);
-	printf("bpp = %d (/8 = %d), longueur ligne = %d et endian = %d\n", getadrr->bpp, getadrr->bpp / 8, getadrr->sizeline, getadrr->endian);
-	while (pts.y < 150)
+	getadrr->data = (int *)mlx_get_data_addr(ptr.img, &getadrr->bpp,
+		&getadrr->sizeline, &getadrr->endian);
+	while (pts.y < 100)
 	{
 		pts.x = 50;
-		while (pts.x < 300)
+		while (pts.x < 100)
 		{
-			//mlx_pixel_put(ptr.mlx, ptr.win, pts.x, pts.y, 0x00FFFFFF);
-			getadrr->data[getadrr->sizeline * pts.y + (getadrr->bpp / 8) * pts.x] = color & 0x00FF0000 >> 16;
-			getadrr->data[getadrr->sizeline * pts.y + (getadrr->bpp / 8) * pts.x + 1] = color & 0x00FF00 >> 8;
-			getadrr->data[getadrr->sizeline * pts.y + (getadrr->bpp / 8) * pts.x + 2] = color & 0x00FF;
+			getadrr->data[WIN_WIDTH * pts.y + pts.x] = 0xFFFFFF;
 			pts.x++;
 		}
 		pts.y++;
